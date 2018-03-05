@@ -42,6 +42,7 @@ compromise
 computer
 constitution
 correct
+crack
 criminal
 crypto
 dark
@@ -50,6 +51,7 @@ dawn
 dead
 denver
 destruct
+difficult
 dinosaur
 direct
 disturb
@@ -96,6 +98,7 @@ gigantic
 give
 good
 great
+hack
 happen
 happy
 hard
@@ -133,6 +136,7 @@ million
 modern
 more
 most
+much
 network
 nine
 nineteen
@@ -161,6 +165,7 @@ raise
 really
 regret
 right
+secret
 secure
 see
 self
@@ -190,6 +195,7 @@ television
 tell
 tempt
 ten
+text
 that
 the
 their
@@ -211,10 +217,12 @@ twenty
 two
 under
 unite
+very
 weapon
 when
 which
 who
+with
 work
 yeast
 you

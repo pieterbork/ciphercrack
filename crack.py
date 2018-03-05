@@ -13,7 +13,8 @@ language_freq_dict = english_freq_dict
 alph = english_alph
 
 #This will include letters for the key within a certain value of the lowest chi squared.
-CHI_THRESHOLD = 1.2
+#Increasing this will find more accurate results, but will also increase runtime.
+CHI_THRESHOLD = 2
 
 #How many words must be detected in a string to validate it as a possible solution?
 WORD_THRESHOLD = 5
@@ -108,21 +109,19 @@ def calc_chi_2(content):
 def get_key(cosets):
     keys = [""]
     for coset in cosets:
-        smallest_chi = 100
-        matches = []
         chis = {}
         for letter in alph:
             decrypted_coset = decrypt(coset, letter)
             chi_2 = calc_chi_2(decrypted_coset)
-            if chi_2 < smallest_chi:
-                smallest_chi = chi_2
             chis[letter] = chi_2
+        smallest_chi = min(chis.values())
         matches = [letter for letter,chi in six.iteritems(chis) if abs(chi - smallest_chi) < CHI_THRESHOLD]
         new_keys = keys
         keys = []
         for match in matches:
             keys.extend([key + match for key in new_keys])
 
+    #print(keys)
     return keys
 
 #Return all cosets to run Caesar rotations on.
@@ -190,13 +189,8 @@ def get_letter_freq_population_variance(text):
 
 #Given a list of GCDs, this will find the divisors that do not have any smaller divisors in the list.
 def get_most_likely_divisors(gcds):
-    best_counts = []
-    largest_count = 0
-    for k,v in six.iteritems(gcds):
-        if v > largest_count:
-            largest_count = v
-            best_counts = [k]
-    best_counts.extend([num for num,count in six.iteritems(gcds) if largest_count == count])
+    largest_count = max(gcds.values())
+    best_counts = [num for num,count in six.iteritems(gcds) if abs(largest_count - count) <= 1]
     
     best_counts = sorted(best_counts, reverse=True)
     most_likely = []
@@ -206,22 +200,6 @@ def get_most_likely_divisors(gcds):
             most_likely.append(candidate)
 
     return most_likely
-
-#Input Vigenere ciphertext and this function returns the key
-def break_cipher(ciphertext):
-    freq_dict = get_segment_freqs(ciphertext)
-    gcds = get_diff_gcds(freq_dict, ciphertext)
-    #print("GCDs {}".format(gcds))
-    most_likely_length = get_most_likely_divisors(gcds)
-    keys = []
-    for length in most_likely_length:
-        #print("Testing length {}".format(length))
-        cosets = get_cosets(ciphertext, length)
-        keys.extend(get_key(cosets))
-        # key = get_key(cosets)
-        # keys.append(key)
-
-    return keys
 
 #Counts how many words from dictionary.txt are contained in a string, returns int.
 def count_words(content, words):
@@ -250,7 +228,28 @@ def brute_force_key_length(ciphertext, max_len=10):
         mean_var = total_coset_pop_var/len(cosets)
         print("For key length of {}, Mean var is {}".format(i, mean_var))
 
-def main(ciphertext=None):
+ #Input Vigenere ciphertext and this function returns the key
+def break_cipher(ciphertext, key_len=None):
+    if not key_len:
+        freq_dict = get_segment_freqs(ciphertext)
+        gcds = get_diff_gcds(freq_dict, ciphertext)
+        #print("GCDs {}".format(gcds))
+        if not gcds:
+            return []
+        most_likely_length = get_most_likely_divisors(gcds)
+    else:
+        most_likely_length = [key_len]
+    keys = []
+    for length in most_likely_length:
+        #print("Testing length {}".format(length))
+        cosets = get_cosets(ciphertext, length)
+        keys.extend(get_key(cosets))
+        # key = get_key(cosets)
+        # keys.append(key)
+
+    return keys       
+
+def main(ciphertext=None, key_len=None):
     content = "DFSAWSXSOJSBMJUVYAUETUWWPDRUTHOOBSWUSWSQMHVSMQRVJFQOCHGFNAOYLGRUWIYLRKISJCHWVOQYZIXYJFXADVKJSMNDPCFRUOYIITOLTHWDPFYRHRVSOFWBMKJGUMRYKDCHDWVLDHCYJEEEOHLOCQJBAAUSKPQIWVXYBHIGHVTPAYEKIZOTFFHRTFCZLGZVSGUCLIJBBXHKMTIOLPUICBHYOWSMBFCZXWRTDYNWWZOWHQRVDBHCZQWVDILTWCJVQBLVHRUOWZQJZESHELECJHSODXRJBNPJVZUMUFWLVOHCNDXZPBUYGRFOFYAXHZBHCZQQFESLYFVPQHIRUEGIMCYWIITSWEVXYFRCDFMGMWHPVSWNONSHQRUWWDFSDQINPUWTJSHNHEEESFPFXIJQUWHRXJBYPUMEHAIOHVEDFSAWSXSOJSBMJISUGLPPCOMPGSENONSHQRUWWLOXYFCLJDRUDCGAXXVSGWTHRTFDLLFXZDSWCBTKPULLSLZDOFRRVZUVGDDVVESMTJRVEOLZXRUDCGAXXRUWIYDPYBFXYHWJBGMFPTKJCHDPEBJBADXGYBZAZUMKIAMSDVUUCVCHEBJBJCDGKJQYMBEEZOXGHVJBFSTWMJUVYZUIKJQUWOCGPGMTEPVUCVCHEBTIWSDWPTHYXEYKJHCDLRWFOMTEPVUCXZVSSZOHJNRFXBJCDGKJQUWPIROGWCBTKPZIRBVVMONPGXVDVHZOSXZVUDUEZTSXLQYDCSLZIPVHOFTVWLFGNSHICFQNCRRZDTLZQXZFFZZXRUBHCZQARTWHGRPMFRCYDGRTSCYWLVVBCEHHJUONPVAYJQBBXIJUWIYHHNISNSHVIFEOTUMEHGODSITUSXNUMDJBUWVXFQFIGLHVUVYTUHVDFSAWMFOYYJVXFMOQPQJFSQYXHRKJGOYFSETHCEXXZPBUWWLVFTZLUKLFRNSDXKIWMTVEMJCFLWMFOCZEKIIJUBERJEPHVPLRXGCLNHHKPWHNUMDJBUEHSEFGYWIEJHWPPQMEUVYQLJKIOGPQHD"
 
     # print("Ciphertext: {}".format(content))
@@ -258,7 +257,7 @@ def main(ciphertext=None):
     #ciphertext = content
 
     #brute_force_key_length(ciphertext)
-
+    ciphertext = ciphertext.replace(' ', '').upper()
     #English letter frequency population variance
     norm_vals = [val*100 for val in six.viewvalues(language_freq_dict)]
     english_pop_var = population_variance(norm_vals)
@@ -266,7 +265,8 @@ def main(ciphertext=None):
     #print("English Dictionary Population Variance is: {}".format(english_pop_var))
 
     english_words = get_dictionary()
-    keys = break_cipher(ciphertext)
+    keys = break_cipher(ciphertext, key_len)
+    #print(keys)
     print("Found {} possible keys!".format(len(keys)))
     #print(keys)
 
