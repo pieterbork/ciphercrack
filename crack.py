@@ -1,14 +1,22 @@
 from __future__ import division
+from collections import Counter
+from languages import english_freq_dict, english_alph
 import re
 import six
-from collections import Counter
 
 #This script is compatible with Python 2 and 3 using future builtins and the six library
 #Known issues: If ciphertext is not long enough or has no repeats, this will error out
 #Should probably perform brute force method along with Kasiski-Babbage Method to more accurately guess key length for smaller ciphertexts
 
-english_freq_dict = {"A": 0.08167, "B": 0.01492, "C": 0.02782, "D": 0.04253, "E": 0.12702, "F": 0.02228, "G": 0.02015, "H": 0.06094, "I": 0.06996, "J": 0.00153, "K": 0.00772, "L": 0.04025, "M": 0.02406, "N": 0.06749, "O": 0.07507, "P": 0.01929, "Q": 0.00095, "R": 0.05987, "S": 0.06327, "T": 0.09056, "U": 0.02758, "V": 0.00978, "W": 0.02360, "X": 0.00150, "Y": 0.01974, "Z": 0.00074}
-alph = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+#Making it easy to switch to other latin alphabet languages in the future
+language_freq_dict = english_freq_dict
+alph = english_alph
+
+#This will include letters for the key within a certain value of the lowest chi squared.
+CHI_THRESHOLD = 1.2
+
+#How many words must be detected in a string to validate it as a possible solution?
+WORD_THRESHOLD = 5
 
 #Encrypts a letter for Vigenere cipher
 def encrypt_letter(letter, key):
@@ -51,7 +59,7 @@ def decrypt(ciphertext, key):
 
     return plaintext
 
-#Input plaintext and key, ("PLAINTEXTMESSAGE", "BOY"); Output "BOYBOYBOYBOYBOYB"
+#Extends key to length of text; Input plaintext and key, ("PLAINTEXTMESSAGE", "BOY"); Output "BOYBOYBOYBOYBOYB"
 def extend_key(text, key):
     text_len = len(text)
     while(len(key) < text_len):
@@ -89,28 +97,33 @@ def calc_chi_2(content):
     total_x2 = 0
 
     counter = 0
-    for k,v in six.iteritems(english_freq_dict):
+    for k,v in six.iteritems(language_freq_dict):
         f = float(content.count(k)) / float(total_len)
         x2 = (f - float(v))**2 / float(v)
         total_x2 += x2
 
     return total_x2
 
-#Given all cosets for a ciphertext, use the chi_squared algorithm to find which decryption results with a frequency analysis closest to English.
+#Given all cosets for a ciphertext, use the chi_squared algorithm to find which decryption results with a frequency analysis closest to English. (Uses CHI_THRESHOLD to include all chi values within a range of lowest chi squared)
 def get_key(cosets):
-    key = ""
+    keys = [""]
     for coset in cosets:
-        best_match = 0
         smallest_chi = 100
+        matches = []
+        chis = {}
         for letter in alph:
             decrypted_coset = decrypt(coset, letter)
             chi_2 = calc_chi_2(decrypted_coset)
             if chi_2 < smallest_chi:
-                best_match = letter
                 smallest_chi = chi_2
-        print("Best Match: {}, Smallest Chi: {}".format(best_match, smallest_chi))
-        key += best_match
-    return key
+            chis[letter] = chi_2
+        matches = [letter for letter,chi in six.iteritems(chis) if abs(chi - smallest_chi) < CHI_THRESHOLD]
+        new_keys = keys
+        keys = []
+        for match in matches:
+            keys.extend([key + match for key in new_keys])
+
+    return keys
 
 #Return all cosets to run Caesar rotations on.
 def get_cosets(ciphertext, most_likely_length):
@@ -118,10 +131,10 @@ def get_cosets(ciphertext, most_likely_length):
     total_len = len(ciphertext)
     cosets = []
     
-    #If key length is 7, there will be 7 cosets - one for each character.
+    #If key length is n, there will be n cosets - one for each character.
     for i in range(0, num_cosets):
         coset = ""
-        #Uses key length to pick out every nth characters.
+        #Uses key length to pick out every nth character.
         for j in range(i, total_len, num_cosets):
             coset += ciphertext[j]
         cosets.append(coset)
@@ -151,18 +164,6 @@ def get_divisors(n):
             divisors.append(i)
     return divisors
 
-#Input Vigenere ciphertext and this function returns the key
-def break_cipher(ciphertext):
-    freq_dict = get_segment_freqs(ciphertext)
-    gcds = get_diff_gcds(freq_dict, ciphertext)
-    most_likely_length = gcds.most_common(1)[0][0]
-    print("Your key is probably {} characters long".format(most_likely_length))
-    
-    cosets = get_cosets(ciphertext, most_likely_length)
-    key = get_key(cosets)
-
-    return key
-
 #Calculated the population variance given a list of values
 def population_variance(vals):
     pop_var = float(0)
@@ -187,55 +188,153 @@ def get_letter_freq_population_variance(text):
     pop_var = population_variance(norm_vals)
     return pop_var
 
-#This function answers both questions here https://ecen5033.org/static/5033-w18-hw2.pdf
-def main():
-    content = "DFSAWSXSOJSBMJUVYAUETUWWPDRUTHOOBSWUSWSQMHVSMQRVJFQOCHGFNAOYLGRUWIYLRKISJCHWVOQYZIXYJFXADVKJSMNDPCFRUOYIITOLTHWDPFYRHRVSOFWBMKJGUMRYKDCHDWVLDHCYJEEEOHLOCQJBAAUSKPQIWVXYBHIGHVTPAYEKIZOTFFHRTFCZLGZVSGUCLIJBBXHKMTIOLPUICBHYOWSMBFCZXWRTDYNWWZOWHQRVDBHCZQWVDILTWCJVQBLVHRUOWZQJZESHELECJHSODXRJBNPJVZUMUFWLVOHCNDXZPBUYGRFOFYAXHZBHCZQQFESLYFVPQHIRUEGIMCYWIITSWEVXYFRCDFMGMWHPVSWNONSHQRUWWDFSDQINPUWTJSHNHEEESFPFXIJQUWHRXJBYPUMEHAIOHVEDFSAWSXSOJSBMJISUGLPPCOMPGSENONSHQRUWWLOXYFCLJDRUDCGAXXVSGWTHRTFDLLFXZDSWCBTKPULLSLZDOFRRVZUVGDDVVESMTJRVEOLZXRUDCGAXXRUWIYDPYBFXYHWJBGMFPTKJCHDPEBJBADXGYBZAZUMKIAMSDVUUCVCHEBJBJCDGKJQYMBEEZOXGHVJBFSTWMJUVYZUIKJQUWOCGPGMTEPVUCVCHEBTIWSDWPTHYXEYKJHCDLRWFOMTEPVUCXZVSSZOHJNRFXBJCDGKJQUWPIROGWCBTKPZIRBVVMONPGXVDVHZOSXZVUDUEZTSXLQYDCSLZIPVHOFTVWLFGNSHICFQNCRRZDTLZQXZFFZZXRUBHCZQARTWHGRPMFRCYDGRTSCYWLVVBCEHHJUONPVAYJQBBXIJUWIYHHNISNSHVIFEOTUMEHGODSITUSXNUMDJBUWVXFQFIGLHVUVYTUHVDFSAWMFOYYJVXFMOQPQJFSQYXHRKJGOYFSETHCEXXZPBUWWLVFTZLUKLFRNSDXKIWMTVEMJCFLWMFOCZEKIIJUBERJEPHVPLRXGCLNHHKPWHNUMDJBUEHSEFGYWIEJHWPPQMEUVYQLJKIOGPQHD"
-
-    print("Ciphertext: {}".format(content))
-
-    key = break_cipher(content)
-    print("Key: {}".format(key))
-
-    plaintext = decrypt(content, key)
-    print("Plaintext: {}".format(plaintext))
-
-    #English letter frequency population variance
-    norm_vals = [val*100 for val in six.viewvalues(english_freq_dict)]
-    pop_var = population_variance(norm_vals)
-    print("English Dictionary Population Variance is: {}".format(pop_var))
-
-    #Plaintext population variance
-    content = "ethicslawanduniversitypoliciestodefendasystemyouneedtobeabletothinklikeanattackerandthatincludesunderstandingtechniquesthatcanbeusedtocompromisesecurityhoweverusingthosetechniquesintherealworldmayviolatethelawortheuniversitysrulesanditmaybeunethicalundersomecircumstancesevenprobingforweaknessesmayresultinseverepenaltiesuptoandincludingexpulsioncivilfinesandjailtimeourpolicyineecsisthatyoumustrespecttheprivacyandpropertyrightsofothersatalltimesorelseyouwillfailthecourseactinglawfullyandethicallyisyourresponsibilitycarefullyreadthecomputerfraudandabuseactcfaaafederalstatutethatbroadlycriminalizescomputerintrusionthisisoneofseverallawsthatgovernhackingunderstandwhatthelawprohibitsyoudontwanttoenduplikethisguyifindoubtwecanreferyoutoanattorneypleasereviewitsspoliciesonresponsibleuseoftechnologyresourcesandcaenspolicydocumentsforguidelinesconcerningproperuseofinformationtechnologyatumaswellastheengineeringhonorcodeasmembersoftheuniversitycommunityyouarerequiredtoabideby"
-    pop_var = get_letter_freq_population_variance(content)
-    print("Plaintext Population Variance is: {}".format(pop_var))
+#Given a list of GCDs, this will find the divisors that do not have any smaller divisors in the list.
+def get_most_likely_divisors(gcds):
+    best_counts = []
+    largest_count = 0
+    for k,v in six.iteritems(gcds):
+        if v > largest_count:
+            largest_count = v
+            best_counts = [k]
+    best_counts.extend([num for num,count in six.iteritems(gcds) if largest_count == count])
     
-    #For these keys, determine ciphertext and coset population variance
-    keys = ["yz", "xyz", "wxyz", "vwxyz", "uvwxyz"]
-    for key in keys:
-        print("Key is: {}".format(key))
-        ciphertext = encrypt(content, key)
-        pop_var = get_letter_freq_population_variance(ciphertext)
-        print("Ciphertext Population Variance is: {}".format(pop_var))
+    best_counts = sorted(best_counts, reverse=True)
+    most_likely = []
 
-        cosets = get_cosets(ciphertext, len(key))
-        total_coset_pop_var = 0
-        for coset in cosets:
-            coset_pop_var = get_letter_freq_population_variance(coset)
-            print("Coset Population Variance is: {}".format(coset_pop_var))
-            total_coset_pop_var += coset_pop_var
-        print("Total Coset Population Variance is {}".format(total_coset_pop_var/len(cosets)))
+    for candidate in best_counts:
+        if candidate < 10 or (not any((candidate % divisor == 0) and candidate != divisor for divisor in best_counts)):
+            most_likely.append(candidate)
 
-    #Show that brute forcing the key length provides obvious results
-    key = keys[-1]
-    ciphertext = encrypt(content, key)
-    print("Brute force method to get key length")
-    for i in range(2, len(key)+1):
+    return most_likely
+
+#Input Vigenere ciphertext and this function returns the key
+def break_cipher(ciphertext):
+    freq_dict = get_segment_freqs(ciphertext)
+    gcds = get_diff_gcds(freq_dict, ciphertext)
+    print("GCDs {}".format(gcds))
+    most_likely_length = get_most_likely_divisors(gcds)
+    keys = []
+    for length in most_likely_length:
+        print("Testing length {}".format(length))
+        cosets = get_cosets(ciphertext, length)
+        keys.extend(get_key(cosets))
+        # key = get_key(cosets)
+        # keys.append(key)
+
+    return keys
+
+#Counts how many words from dictionary.txt are contained in a string, returns int.
+def count_words(content, words):
+    total = 0
+    for word in words:
+        total += content.count(word.upper())
+    return total
+
+#Reads in dictionary.txt and writes and returns a unique, sorted list of all words contained.
+def get_dictionary():
+    with open('dictionary.txt', 'r') as fp:
+        english_words = fp.read().splitlines()
+    with open('dictionary.txt', 'w') as fp:
+        corrected_words = sorted(list(set(english_words)))
+        fp.write("\n".join(corrected_words))
+    return corrected_words
+
+def brute_force_key_length(ciphertext, max_len=10):
+    for i in range(2, max_len):
         cosets = get_cosets(ciphertext, i)
         total_coset_pop_var = 0
         for coset in cosets:
             coset_pop_var = get_letter_freq_population_variance(coset)
+            #print("Coset population variance {}".format(coset_pop_var))
             total_coset_pop_var += coset_pop_var
-        print("Key Length: {}, Coset Mean Population Variance: {}".format(i, total_coset_pop_var/len(cosets)))
+        mean_var = total_coset_pop_var/len(cosets)
+        print("For key length of {}, Mean var is {}".format(i, mean_var))
+
+def main(ciphertext=None):
+    content = "DFSAWSXSOJSBMJUVYAUETUWWPDRUTHOOBSWUSWSQMHVSMQRVJFQOCHGFNAOYLGRUWIYLRKISJCHWVOQYZIXYJFXADVKJSMNDPCFRUOYIITOLTHWDPFYRHRVSOFWBMKJGUMRYKDCHDWVLDHCYJEEEOHLOCQJBAAUSKPQIWVXYBHIGHVTPAYEKIZOTFFHRTFCZLGZVSGUCLIJBBXHKMTIOLPUICBHYOWSMBFCZXWRTDYNWWZOWHQRVDBHCZQWVDILTWCJVQBLVHRUOWZQJZESHELECJHSODXRJBNPJVZUMUFWLVOHCNDXZPBUYGRFOFYAXHZBHCZQQFESLYFVPQHIRUEGIMCYWIITSWEVXYFRCDFMGMWHPVSWNONSHQRUWWDFSDQINPUWTJSHNHEEESFPFXIJQUWHRXJBYPUMEHAIOHVEDFSAWSXSOJSBMJISUGLPPCOMPGSENONSHQRUWWLOXYFCLJDRUDCGAXXVSGWTHRTFDLLFXZDSWCBTKPULLSLZDOFRRVZUVGDDVVESMTJRVEOLZXRUDCGAXXRUWIYDPYBFXYHWJBGMFPTKJCHDPEBJBADXGYBZAZUMKIAMSDVUUCVCHEBJBJCDGKJQYMBEEZOXGHVJBFSTWMJUVYZUIKJQUWOCGPGMTEPVUCVCHEBTIWSDWPTHYXEYKJHCDLRWFOMTEPVUCXZVSSZOHJNRFXBJCDGKJQUWPIROGWCBTKPZIRBVVMONPGXVDVHZOSXZVUDUEZTSXLQYDCSLZIPVHOFTVWLFGNSHICFQNCRRZDTLZQXZFFZZXRUBHCZQARTWHGRPMFRCYDGRTSCYWLVVBCEHHJUONPVAYJQBBXIJUWIYHHNISNSHVIFEOTUMEHGODSITUSXNUMDJBUWVXFQFIGLHVUVYTUHVDFSAWMFOYYJVXFMOQPQJFSQYXHRKJGOYFSETHCEXXZPBUWWLVFTZLUKLFRNSDXKIWMTVEMJCFLWMFOCZEKIIJUBERJEPHVPLRXGCLNHHKPWHNUMDJBUEHSEFGYWIEJHWPPQMEUVYQLJKIOGPQHD"
+
+    # print("Ciphertext: {}".format(content))
+
+    #ciphertext = content
+
+    brute_force_key_length(ciphertext)
+
+    #English letter frequency population variance
+    norm_vals = [val*100 for val in six.viewvalues(language_freq_dict)]
+    english_pop_var = population_variance(norm_vals)
+    print("English Dictionary Population Variance is: {}".format(english_pop_var))
+
+    english_words = get_dictionary()
+    keys = break_cipher(ciphertext)
+    print("Found {} possible keys!".format(len(keys)))
+    #print(keys)
+
+    if len(keys) > 0:
+        solutions = {}
+        for key in keys:
+            #print("Key is possibly: {}".format(key))
+            plaintext = decrypt(ciphertext, key)
+            pop_var = get_letter_freq_population_variance(plaintext)
+            diff_pop_var = abs(english_pop_var - pop_var)
+            num_words = count_words(plaintext, english_words)
+
+            if num_words > WORD_THRESHOLD:
+                solutions[key] = {"key": key, "pop_var":pop_var, "plaintext":plaintext, "num_words":num_words}
+
+        if len(solutions) > 0:
+            print(solutions)
+            best_sol = {}
+            best_sol_count = 0
+            print("Found {} possible solutions.".format(len(solutions)))
+            for key, sol_dict in six.iteritems(solutions):
+                if sol_dict["num_words"] > best_sol_count:
+                    best_sol = sol_dict
+                    best_sol_count = sol_dict["num_words"]
+            print("Found solution with key {} and plaintext {}".format(best_sol["key"], best_sol["plaintext"]))
+            print("Found {} dictionary words in content, with a population variance of {}".format(best_sol["num_words"], best_sol["pop_var"]))
+        else:
+            print("Could not find any likely solutions.")
+
+    else:
+        print("Could not determine any likely keys.")
+
+
+    #Plaintext population variance
+    # content = "ethicslawanduniversitypoliciestodefendasystemyouneedtobeabletothinklikeanattackerandthatincludesunderstandingtechniquesthatcanbeusedtocompromisesecurityhoweverusingthosetechniquesintherealworldmayviolatethelawortheuniversitysrulesanditmaybeunethicalundersomecircumstancesevenprobingforweaknessesmayresultinseverepenaltiesuptoandincludingexpulsioncivilfinesandjailtimeourpolicyineecsisthatyoumustrespecttheprivacyandpropertyrightsofothersatalltimesorelseyouwillfailthecourseactinglawfullyandethicallyisyourresponsibilitycarefullyreadthecomputerfraudandabuseactcfaaafederalstatutethatbroadlycriminalizescomputerintrusionthisisoneofseverallawsthatgovernhackingunderstandwhatthelawprohibitsyoudontwanttoenduplikethisguyifindoubtwecanreferyoutoanattorneypleasereviewitsspoliciesonresponsibleuseoftechnologyresourcesandcaenspolicydocumentsforguidelinesconcerningproperuseofinformationtechnologyatumaswellastheengineeringhonorcodeasmembersoftheuniversitycommunityyouarerequiredtoabideby"
+    # pop_var = get_letter_freq_population_variance(content)
+    # print("Plaintext Population Variance is: {}".format(pop_var))
+    
+    #For these keys, determine ciphertext and coset population variance
+    # keys = ["yz", "xyz", "wxyz", "vwxyz", "uvwxyz"]
+    # for key in keys:
+    #     print("Key is: {}".format(key))
+    #     ciphertext = encrypt(content, key)
+    #     pop_var = get_letter_freq_population_variance(ciphertext)
+    #     print("Ciphertext Population Variance is: {}".format(pop_var))
+
+    #     cosets = get_cosets(ciphertext, len(key))
+    #     total_coset_pop_var = 0
+    #     for coset in cosets:
+    #         coset_pop_var = get_letter_freq_population_variance(coset)
+    #         print("Coset Population Variance is: {}".format(coset_pop_var))
+    #         total_coset_pop_var += coset_pop_var
+    #     print("Total Coset Population Variance is {}".format(total_coset_pop_var/len(cosets)))
+
+    #Show that brute forcing the key length provides obvious results
+    # key = keys[-1]
+    # ciphertext = encrypt(content, key)
+    # print("Brute force method to get key length")
+    # max_len = 10
+    # for i in range(2, max_len):
+    #     cosets = get_cosets(ciphertext, i)
+    #     total_coset_pop_var = 0
+    #     for coset in cosets:
+    #         coset_pop_var = get_letter_freq_population_variance(coset)
+    #         print("Coset population variance {}".format(coset_pop_var))
+    #         total_coset_pop_var += coset_pop_var
+    #     mean_var = total_coset_pop_var/len(cosets)
+    #     if pop_var - mean_var < 1:
+    #         print("Key Length: {}, Coset Mean Population Variance: {}".format(i, mean_var))
 
 if __name__ == "__main__":
     main()
