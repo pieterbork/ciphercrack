@@ -299,43 +299,5 @@ def main(ciphertext=None):
     else:
         print("Could not determine any likely keys.")
 
-
-    #Plaintext population variance
-    # content = "ethicslawanduniversitypoliciestodefendasystemyouneedtobeabletothinklikeanattackerandthatincludesunderstandingtechniquesthatcanbeusedtocompromisesecurityhoweverusingthosetechniquesintherealworldmayviolatethelawortheuniversitysrulesanditmaybeunethicalundersomecircumstancesevenprobingforweaknessesmayresultinseverepenaltiesuptoandincludingexpulsioncivilfinesandjailtimeourpolicyineecsisthatyoumustrespecttheprivacyandpropertyrightsofothersatalltimesorelseyouwillfailthecourseactinglawfullyandethicallyisyourresponsibilitycarefullyreadthecomputerfraudandabuseactcfaaafederalstatutethatbroadlycriminalizescomputerintrusionthisisoneofseverallawsthatgovernhackingunderstandwhatthelawprohibitsyoudontwanttoenduplikethisguyifindoubtwecanreferyoutoanattorneypleasereviewitsspoliciesonresponsibleuseoftechnologyresourcesandcaenspolicydocumentsforguidelinesconcerningproperuseofinformationtechnologyatumaswellastheengineeringhonorcodeasmembersoftheuniversitycommunityyouarerequiredtoabideby"
-    # pop_var = get_letter_freq_population_variance(content)
-    # print("Plaintext Population Variance is: {}".format(pop_var))
-    
-    #For these keys, determine ciphertext and coset population variance
-    # keys = ["yz", "xyz", "wxyz", "vwxyz", "uvwxyz"]
-    # for key in keys:
-    #     print("Key is: {}".format(key))
-    #     ciphertext = encrypt(content, key)
-    #     pop_var = get_letter_freq_population_variance(ciphertext)
-    #     print("Ciphertext Population Variance is: {}".format(pop_var))
-
-    #     cosets = get_cosets(ciphertext, len(key))
-    #     total_coset_pop_var = 0
-    #     for coset in cosets:
-    #         coset_pop_var = get_letter_freq_population_variance(coset)
-    #         print("Coset Population Variance is: {}".format(coset_pop_var))
-    #         total_coset_pop_var += coset_pop_var
-    #     print("Total Coset Population Variance is {}".format(total_coset_pop_var/len(cosets)))
-
-    #Show that brute forcing the key length provides obvious results
-    # key = keys[-1]
-    # ciphertext = encrypt(content, key)
-    # print("Brute force method to get key length")
-    # max_len = 10
-    # for i in range(2, max_len):
-    #     cosets = get_cosets(ciphertext, i)
-    #     total_coset_pop_var = 0
-    #     for coset in cosets:
-    #         coset_pop_var = get_letter_freq_population_variance(coset)
-    #         print("Coset population variance {}".format(coset_pop_var))
-    #         total_coset_pop_var += coset_pop_var
-    #     mean_var = total_coset_pop_var/len(cosets)
-    #     if pop_var - mean_var < 1:
-    #         print("Key Length: {}, Coset Mean Population Variance: {}".format(i, mean_var))
-
 if __name__ == "__main__":
     main()
