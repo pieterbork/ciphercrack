@@ -211,11 +211,11 @@ def get_most_likely_divisors(gcds):
 def break_cipher(ciphertext):
     freq_dict = get_segment_freqs(ciphertext)
     gcds = get_diff_gcds(freq_dict, ciphertext)
-    print("GCDs {}".format(gcds))
+    #print("GCDs {}".format(gcds))
     most_likely_length = get_most_likely_divisors(gcds)
     keys = []
     for length in most_likely_length:
-        print("Testing length {}".format(length))
+        #print("Testing length {}".format(length))
         cosets = get_cosets(ciphertext, length)
         keys.extend(get_key(cosets))
         # key = get_key(cosets)
@@ -257,12 +257,13 @@ def main(ciphertext=None):
 
     #ciphertext = content
 
-    brute_force_key_length(ciphertext)
+    #brute_force_key_length(ciphertext)
 
     #English letter frequency population variance
     norm_vals = [val*100 for val in six.viewvalues(language_freq_dict)]
     english_pop_var = population_variance(norm_vals)
-    print("English Dictionary Population Variance is: {}".format(english_pop_var))
+
+    #print("English Dictionary Population Variance is: {}".format(english_pop_var))
 
     english_words = get_dictionary()
     keys = break_cipher(ciphertext)
@@ -282,7 +283,7 @@ def main(ciphertext=None):
                 solutions[key] = {"key": key, "pop_var":pop_var, "plaintext":plaintext, "num_words":num_words}
 
         if len(solutions) > 0:
-            print(solutions)
+            #print(solutions)
             best_sol = {}
             best_sol_count = 0
             print("Found {} possible solutions.".format(len(solutions)))

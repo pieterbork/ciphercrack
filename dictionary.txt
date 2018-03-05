@@ -24,6 +24,7 @@ billion
 bitch
 boulder
 bread
+break
 bridge
 build
 burger
@@ -162,6 +163,7 @@ regret
 right
 secure
 see
+self
 sense
 sentence
 sentient
@@ -176,6 +178,7 @@ small
 smell
 species
 state
+stop
 study
 suppose
 sure

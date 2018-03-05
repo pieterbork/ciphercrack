@@ -10,7 +10,10 @@ Right now, `crack.py` is only capable of solving Vigenere ciphers.
 ```python
 $ python
 >>> import crack
->>> crack.main(crack.encrypt("thisisaverysecretstringthatmustbelongenoughtohaveduplicatessothaticancrackthecipherwhichismuchmoredifficultwhenthetextisshort", "secret"))
-
-Found solution with key SECRET and plaintext THISISAVERYSECRETSTRINGTHATMUSTBELONGENOUGHTOHAVEDUPLICATESSOTHATICANCRACKTHECIPHERWHICHISMUCHMOREDIFFICULTWHENTHETEXTISSHORT
+>>> ciphertext = crack.encrypt("thisisaverysecretstringthatmustbelongenoughtohaveduplicatessothaticancrackthecipherwhichismuchmoredifficultwhenthetextisshort", "secret")
+>>> crack.main(ciphertext)
+Found 47 possible keys!
+Found 1 possible solutions.                                                                           
+Found solution with key SECRET and plaintext THISISAVERYSECRETSTRINGTHATMUSTBELONGENOUGHTOHAVEDUPLICATESSOTHATICANCRACKTHECIPHERWHICHISMUCHMOREDIFFICULTWHENTHETEXTISSHORT                                  
+Found 11 dictionary words in content, with a population variance of 13.047100591715978
 ```
