@@ -12,7 +12,7 @@ $ python
 >>> import crack
 >>> ciphertext = crack.encrypt("thisisaverysecretstringthatmustbelongenoughtohaveduplicatessothaticancrackthecipherwhichismuchmoredifficultwhenthetextisshort", "secret")
 >>> crack.main(ciphertext)
-Found 47 possible keys!
+Found 35 possible keys!
 Found 1 possible solutions.                                                                           
 Found solution with key SECRET and plaintext THISISAVERYSECRETSTRINGTHATMUSTBELONGENOUGHTOHAVEDUPLICATESSOTHATICANCRACKTHECIPHERWHICHISMUCHMOREDIFFICULTWHENTHETEXTISSHORT                                  
 Found 11 dictionary words in content, with a population variance of 13.047100591715978
