@@ -27,22 +27,11 @@ def b64_encode(string):
 def b64_decode(string):
     return base64.b64decode(string)
 
-def detect_encoding(string):
-    base64_regex = "^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$"
-    binary_regex = "^(1(01*0)*1|0)+$"
-    hex_regex = "^0[xX][0-9a-fA-F]+$"
-    url_regex = "^(%..%..)+$"
+def decimal_encode(string):
+    return ' '.join(ord(c) for c in string)
 
-    if re.match(hex_regex, string):
-        return "hex"
-    elif re.match(binary_regex, string):
-        return "binary"
-    elif re.match(url_regex, string):
-        return "url"
-    elif re.match(base64_regex, string):
-        return "base64"
-    else:
-        return None
+def decimal_decode(string):
+    return ''.join(chr(int(c)) for c in string.split())
 
 def decode(string, encode_type):
     if encode_type == "hex":
@@ -53,9 +42,31 @@ def decode(string, encode_type):
         return url_decode(string)
     elif encode_type == "base64":
         return b64_decode(string)
+    elif encode_type == "decimal":
+        return decimal_decode(string)
     else:
         print("WHAT IS THIS {}".format(encode_type))
         return
+
+def detect_encoding(string):
+    base64_regex = "^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$"
+    binary_regex = "^(1(01*0)*1|0)+$"
+    hex_regex = "^0[xX][0-9a-fA-F]+$"
+    decimal_regex = "^([0-9]{2,3}.?)+$"
+    url_regex = "^(%..%..)+$"
+
+    if re.match(hex_regex, string):
+        return "hex"
+    elif re.match(binary_regex, string):
+        return "binary"
+    elif re.match(url_regex, string):
+        return "url"
+    elif re.match(base64_regex, string):
+        return "base64"
+    elif re.match(decimal_regex, string):
+        return "decimal"
+    else:
+        return None
 
 def check_encoding(string):
     if type(string) == bytes:
