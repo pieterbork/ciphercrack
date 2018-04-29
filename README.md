@@ -9,6 +9,26 @@ Inspiration for adding encoding came from [Decodify](https://github.com/Ultimate
 
 Currently, ciphercrack can decode binary, hex, base64, and decimal strings. Hex/Decimal encoding detection needs a bit of work still.
 
+## How it works
+```python
+$ python examples/encoding_example.py
+Decoded base64 string to b'%30%78%37%30%36%39%36%35%37%34%36%35%37%32%36%32%36%66%37%32%36%62'
+Decoded url string to 0x706965746572626f726b
+Decoded hex string to pieterbork
+There you have it!  
+```
+
+```python
+$ python
+>>> from ciphertext.vigenere import encrypt
+>>> from ciphertext import crack
+>>> ciphertext = encrypt("thisisaverysecretstringthatmustbelongenoughtohaveduplicatessothaticancrackthecipherwhichismuchmoredifficultwhenthetextisshort", "secret")
+>>> crack(ciphertext)
+Found 35 possible keys!
+Found 1 possible solutions.                                                                           
+Found solution with key SECRET and plaintext THISISAVERYSECRETSTRINGTHATMUSTBELONGENOUGHTOHAVEDUPLICATESSOTHATICANCRACKTHECIPHERWHICHISMUCHMOREDIFFICULTWHENTHETEXTISSHORT                                  
+```
+
 ### Vigenere
 
 ciphercrack can solve Vigenere ciphers using the Kasiski/Babbage method. 
@@ -42,22 +62,3 @@ Vigenere is just a Caesar cipher for each letter, so it ciphercrack can by defau
 'SDRS'
 ```
 
-## Examples
-```python
-$ python examples/encoding_example.py
-Decoded base64 string to b'%30%78%37%30%36%39%36%35%37%34%36%35%37%32%36%32%36%66%37%32%36%62'
-Decoded url string to 0x706965746572626f726b
-Decoded hex string to pieterbork
-There you have it!  
-```
-
-```python
-$ python
->>> from ciphertext.vigenere import encrypt
->>> from ciphertext import crack
->>> ciphertext = encrypt("thisisaverysecretstringthatmustbelongenoughtohaveduplicatessothaticancrackthecipherwhichismuchmoredifficultwhenthetextisshort", "secret")
->>> crack(ciphertext)
-Found 35 possible keys!
-Found 1 possible solutions.                                                                           
-Found solution with key SECRET and plaintext THISISAVERYSECRETSTRINGTHATMUSTBELONGENOUGHTOHAVEDUPLICATESSOTHATICANCRACKTHECIPHERWHICHISMUCHMOREDIFFICULTWHENTHETEXTISSHORT                                  
-```
