@@ -1,13 +1,7 @@
-from __future__ import division
+from ciphercrack.languages import english_dict, english_freq_dict, english_alph
+from ciphercrack.utils import count_words, find_all_indexes, get_divisors
 from collections import Counter
-from languages import english_freq_dict, english_alph
-import re
-import six
-import encoding
-
-#This script is compatible with Python 2 and 3 using future builtins and the six library
-#Known issues: If ciphertext is not long enough or has no repeats, this will error out
-#Should probably perform brute force method along with Kasiski-Babbage Method to more accurately guess key length for smaller ciphertexts
+import six, re
 
 #Making it easy to switch to other latin alphabet languages in the future
 language_freq_dict = english_freq_dict
@@ -68,7 +62,6 @@ def extend_key(text, key):
         key += key
     return key[:text_len]
 
-
 #Builds a dictionary of segments with 3+ characters
 #If I give ABCABC
 #Returns {"ABC": 2, "ABCA": 1, "ABCAB": 1, "ABCABC": 1, "BCA": 1, "BCAB": 1, "BCABC": 1, "CAB": 1, "CABC": 1}
@@ -88,7 +81,7 @@ def get_diff_gcds(freq_dict, ciphertext):
     gcd_counter = Counter()
     for key,count in six.iteritems(freq_dict):
         if count > 1:
-            indexes = find_all(key, ciphertext)
+            indexes = find_all_indexes(key, ciphertext)
             gcds = get_diffs(indexes)
             gcd_counter += gcds
     return gcd_counter
@@ -150,20 +143,6 @@ def get_diffs(indexes):
         diffs.extend(divs)
     return Counter(diffs)
 
-#Find all indexes of a string within a string 
-#Input "ABCABCABC"; Output [0, 3, 6]
-def find_all(word, ciphertext):
-    indexes = [m.start() for m in re.finditer(word, ciphertext)]
-    return indexes
-
-#Get all divisors for a number (not including 1 and n)
-def get_divisors(n):
-    divisors = []
-    for i in range(2, n):
-        if n % i == 0:
-            divisors.append(i)
-    return divisors
-
 #Calculated the population variance given a list of values
 def population_variance(vals):
     pop_var = float(0)
@@ -202,34 +181,7 @@ def get_most_likely_divisors(gcds):
 
     return most_likely
 
-#Counts how many words from dictionary.txt are contained in a string, returns int.
-def count_words(content, words):
-    total = 0
-    for word in words:
-        total += content.count(word.upper())
-    return total
-
-#Reads in dictionary.txt and writes and returns a unique, sorted list of all words contained.
-def get_dictionary():
-    with open('dictionary.txt', 'r') as fp:
-        english_words = fp.read().splitlines()
-    with open('dictionary.txt', 'w') as fp:
-        corrected_words = sorted(list(set(english_words)))
-        fp.write("\n".join(corrected_words))
-    return corrected_words
-
-def brute_force_key_length(ciphertext, max_len=10):
-    for i in range(2, max_len):
-        cosets = get_cosets(ciphertext, i)
-        total_coset_pop_var = 0
-        for coset in cosets:
-            coset_pop_var = get_letter_freq_population_variance(coset)
-            #print("Coset population variance {}".format(coset_pop_var))
-            total_coset_pop_var += coset_pop_var
-        mean_var = total_coset_pop_var/len(cosets)
-        print("For key length of {}, Mean var is {}".format(i, mean_var))
-
- #Input Vigenere ciphertext and this function returns the key
+#Input Vigenere ciphertext and this function returns the key
 def break_cipher(ciphertext, key_len=None):
     if not key_len:
         freq_dict = get_segment_freqs(ciphertext)
@@ -251,7 +203,6 @@ def break_cipher(ciphertext, key_len=None):
     return keys
 
 def vigenere_crack(ciphertext, key_len=None):
-    #brute_force_key_length(ciphertext)
     ciphertext = ciphertext.replace(' ', '').upper()
     #English letter frequency population variance
     norm_vals = [val*100 for val in six.viewvalues(language_freq_dict)]
@@ -259,7 +210,6 @@ def vigenere_crack(ciphertext, key_len=None):
 
     #print("English Dictionary Population Variance is: {}".format(english_pop_var))
 
-    english_words = get_dictionary()
     keys = break_cipher(ciphertext, key_len)
     #print(keys)
     print("Found {} possible keys!".format(len(keys)))
@@ -272,7 +222,7 @@ def vigenere_crack(ciphertext, key_len=None):
             plaintext = decrypt(ciphertext, key)
             pop_var = get_letter_freq_population_variance(plaintext)
             diff_pop_var = abs(english_pop_var - pop_var)
-            num_words = count_words(plaintext, english_words)
+            num_words = count_words(plaintext, english_dict)
 
             if num_words > WORD_THRESHOLD:
                 solutions[key] = {"key": key, "pop_var":pop_var, "plaintext":plaintext, "num_words":num_words}
@@ -293,42 +243,3 @@ def vigenere_crack(ciphertext, key_len=None):
 
     else:
         print("Could not determine any likely keys.")
-
-
-def check_hashes(ciphertext):
-    md5_regex = "^[0-9a-f]{32}$"
-    sha1_regex = "^[0-9a-f]{40}"
-    lens = [32, 40]
-    cipher_len = len(ciphertext)
-
-    if cipher_len in lens:
-        if re.match(md5_regex, ciphertext):
-            return "MD5"
-        elif re.match(sha1_regex, ciphertext):
-            return "SHA1"
-    return None
-
-def main(ciphertext=None, key_len=None):
-    content = "DFSAWSXSOJSBMJUVYAUETUWWPDRUTHOOBSWUSWSQMHVSMQRVJFQOCHGFNAOYLGRUWIYLRKISJCHWVOQYZIXYJFXADVKJSMNDPCFRUOYIITOLTHWDPFYRHRVSOFWBMKJGUMRYKDCHDWVLDHCYJEEEOHLOCQJBAAUSKPQIWVXYBHIGHVTPAYEKIZOTFFHRTFCZLGZVSGUCLIJBBXHKMTIOLPUICBHYOWSMBFCZXWRTDYNWWZOWHQRVDBHCZQWVDILTWCJVQBLVHRUOWZQJZESHELECJHSODXRJBNPJVZUMUFWLVOHCNDXZPBUYGRFOFYAXHZBHCZQQFESLYFVPQHIRUEGIMCYWIITSWEVXYFRCDFMGMWHPVSWNONSHQRUWWDFSDQINPUWTJSHNHEEESFPFXIJQUWHRXJBYPUMEHAIOHVEDFSAWSXSOJSBMJISUGLPPCOMPGSENONSHQRUWWLOXYFCLJDRUDCGAXXVSGWTHRTFDLLFXZDSWCBTKPULLSLZDOFRRVZUVGDDVVESMTJRVEOLZXRUDCGAXXRUWIYDPYBFXYHWJBGMFPTKJCHDPEBJBADXGYBZAZUMKIAMSDVUUCVCHEBJBJCDGKJQYMBEEZOXGHVJBFSTWMJUVYZUIKJQUWOCGPGMTEPVUCVCHEBTIWSDWPTHYXEYKJHCDLRWFOMTEPVUCXZVSSZOHJNRFXBJCDGKJQUWPIROGWCBTKPZIRBVVMONPGXVDVHZOSXZVUDUEZTSXLQYDCSLZIPVHOFTVWLFGNSHICFQNCRRZDTLZQXZFFZZXRUBHCZQARTWHGRPMFRCYDGRTSCYWLVVBCEHHJUONPVAYJQBBXIJUWIYHHNISNSHVIFEOTUMEHGODSITUSXNUMDJBUWVXFQFIGLHVUVYTUHVDFSAWMFOYYJVXFMOQPQJFSQYXHRKJGOYFSETHCEXXZPBUWWLVFTZLUKLFRNSDXKIWMTVEMJCFLWMFOCZEKIIJUBERJEPHVPLRXGCLNHHKPWHNUMDJBUEHSEFGYWIEJHWPPQMEUVYQLJKIOGPQHD"
-
-    if not ciphertext:
-        ciphertext = content
-
-    # print("Ciphertext: {}".format(content))
-    decoded = encoding.check_encoding(ciphertext)
-    if decoded != ciphertext:
-        print("There you have it!")
-        return
-
-    hash_type = check_hashes(ciphertext)
-    if hash_type:
-        print("This is a {} hash".format(hash_type))
-        return
-
-    vigenere_crack(ciphertext)
-    #ciphertext = content
-
-
-
-if __name__ == "__main__":
-    main()

@@ -1,8 +1,8 @@
-import crack
-import base64
+from ciphercrack import crack
 from urllib.parse import quote
+import base64
 
-og_str = "teamultimate.in"
+og_str = "pieterbork"
 hex_str = '0x' + ''.join(hex(ord(c))[2:] for c in og_str)
 print(hex_str)
 url_str = ''.join('%' + hex(ord(c))[2:] for c in hex_str)
