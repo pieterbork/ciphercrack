@@ -82,7 +82,7 @@ def check_encoding(string):
             decoded = decode(string, encode_type)
             if type(string) == bytes:
                 decoded = decoded.decode()
-                print("Decoded {} string to {}".format(encode_type, decoded))
+            print("Decoded {} string to {}".format(encode_type, decoded))
         except:
             print("I thought it was {} but it wasn't...".format(encode_type))
     else:
