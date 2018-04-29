@@ -69,7 +69,6 @@ def detect_encoding(string):
         return None
 
 def check_encoding(string):
-    print(string, len(string))
     try:
         if type(string) == bytes:
             string = string.decode()
