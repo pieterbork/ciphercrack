@@ -8,28 +8,27 @@ from ciphercrack import hashing
 
 #This script is compatible with Python 2 and 3 using the six library
 #Known issues: If ciphertext is not long enough or has no repeats, this will error out
-def crack(ciphertext=None, key_len=None):
-    if not ciphertext:
-        print("No ciphertext provided.")
-        return
-
+def crack(ciphertext, key_len=None):
     hash_type = hashing.check_hashes(ciphertext)
     if hash_type:
         print("This is a {} hash".format(hash_type))
-        return
+        return hash_type
 
     # print("Ciphertext: {}".format(content))
     decoded = encoding.check_encoding(ciphertext)
     if decoded != ciphertext:
-        return
+        print("Final decoded string: {}".format(decoded))
+        return decoded
 
     solution = vigenere_crack(ciphertext)
     if solution:
         key = solution["key"]
+        plaintext = solution["plaintext"]
         if len(set(key)) == 1:
             print("This was a Caesar Cipher, equivalent of Rot {}".format(english_alph.index(key[0])))
             key=key[0]
-        print("Found solution with key {} and plaintext {}".format(key, solution["plaintext"]))
+        print("Found solution with key {} and plaintext {}".format(key, plaintext))
+        return plaintext
     else:
         print("Could not find any solutions")
 

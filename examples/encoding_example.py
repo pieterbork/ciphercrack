@@ -10,4 +10,5 @@ url_str = ''.join('%' + hex(ord(c))[2:] for c in hex_str)
 b64_str = base64.b64encode(url_str.encode())
 #print(b64_str)
 
-crack(b64_str)
+result = crack(b64_str)
+#print(result)
