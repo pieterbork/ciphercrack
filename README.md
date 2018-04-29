@@ -5,18 +5,29 @@ Eventually, I want this project to be capable of detecting and cracking all comm
 
 Inspiration for adding encoding came from [Decodify](https://github.com/UltimateHackers/Decodify/blob/master/README.md)
 
-### Encoding
-
-Currently, ciphercrack can decode binary, hex, base64, and decimal strings. Hex/Decimal encoding detection needs a bit of work still.
 
 ## How it works
+
+Encoding
+
 ```python
-$ python examples/encoding_example.py
+$ python
+>>> from ciphertext import crack
+>>> import base64
+>>> og_str = "pieterbork"
+>>> hex_str = '0x' + ''.join(hex(ord(c))[2:] for c in og_str)
+>>> url_str = ''.join('%' + hex(ord(c))[2:] for c in hex_str)
+>>> b64_str = base64.b64encode(url_str.encode())
+>>> print(b64_str)
+b'JTMwJTc4JTM3JTMwJTM2JTM5JTM2JTM1JTM3JTM0JTM2JTM1JTM3JTMyJTM2JTMyJTM2JTY2JTM3JTMyJTM2JTYy'
+>>> crack(b64_str)
 Decoded base64 string to b'%30%78%37%30%36%39%36%35%37%34%36%35%37%32%36%32%36%66%37%32%36%62'
 Decoded url string to 0x706965746572626f726b
 Decoded hex string to pieterbork
-There you have it!  
+Final decoded string: pieterbork
 ```
+
+Vigenere
 
 ```python
 $ python
@@ -28,6 +39,25 @@ Found 35 possible keys!
 Found 1 possible solutions.                                                                           
 Found solution with key SECRET and plaintext THISISAVERYSECRETSTRINGTHATMUSTBELONGENOUGHTOHAVEDUPLICATESSOTHATICANCRACKTHECIPHERWHICHISMUCHMOREDIFFICULTWHENTHETEXTISSHORT                                  
 ```
+
+Hashing
+
+```python
+$ echo "test" | md5sum
+d8e8fca2dc0f896fd7cb4cb0031ba249
+$ python
+>>> from ciphercrack import crack
+>>> crack('d8e8fca2dc0f896fd7cb4cb0031ba249')
+This is a MD5 hash
+```
+
+### Encoding
+
+Currently, ciphercrack can decode binary, hex, base64, and decimal strings. Hex/Decimal encoding detection needs a bit of work still.
+
+### Hashing
+
+This is just simple detection right now, more to come.
 
 ### Vigenere
 
