@@ -46,7 +46,7 @@ def encrypt(plaintext, key):
 
 #Input ciphertext and key, output plaintext
 def decrypt(ciphertext, key):
-    key = extend_key(ciphertext, key)
+    key = extend_key(ciphertext, key).upper()
 
     plaintext = ""
     for idx,c in enumerate(ciphertext):
@@ -72,7 +72,7 @@ def get_segment_freqs(ciphertext):
         for i in range(h+3, total_len):
             word = ciphertext[h:i]
             segment_list.append(word)
-    
+
     freq_dict = dict(Counter(segment_list))
     return freq_dict
 
@@ -115,7 +115,6 @@ def get_key(cosets):
         for match in matches:
             keys.extend([key + match for key in new_keys])
 
-    #print(keys)
     return keys
 
 #Return all cosets to run Caesar rotations on.
@@ -123,7 +122,7 @@ def get_cosets(ciphertext, most_likely_length):
     num_cosets = most_likely_length
     total_len = len(ciphertext)
     cosets = []
-    
+
     #If key length is n, there will be n cosets - one for each character.
     for i in range(0, num_cosets):
         coset = ""
@@ -132,8 +131,8 @@ def get_cosets(ciphertext, most_likely_length):
             coset += ciphertext[j]
         cosets.append(coset)
     return cosets
-    
-#Takes differences between segment indexes and returns a counter of GCDs. 
+
+#Takes differences between segment indexes and returns a counter of GCDs.
 #The most popular GCD is most likely the key length
 def get_diffs(indexes):
     diffs = []
@@ -171,7 +170,7 @@ def get_letter_freq_population_variance(text):
 def get_most_likely_divisors(gcds):
     largest_count = max(gcds.values())
     best_counts = [num for num,count in six.iteritems(gcds) if abs(largest_count - count) <= 1]
-    
+
     best_counts = sorted(best_counts, reverse=True)
     most_likely = []
 
@@ -200,46 +199,42 @@ def break_cipher(ciphertext, key_len=None):
         # key = get_key(cosets)
         # keys.append(key)
 
-    return keys
+        return keys
 
-def vigenere_crack(ciphertext, key_len=None):
-    ciphertext = ciphertext.replace(' ', '').upper()
+def get_solution(ciphertext, keys):
     #English letter frequency population variance
     norm_vals = [val*100 for val in six.viewvalues(language_freq_dict)]
     english_pop_var = population_variance(norm_vals)
-
-    #print("English Dictionary Population Variance is: {}".format(english_pop_var))
-
-    keys = break_cipher(ciphertext, key_len)
-    #print(keys)
-    print("Found {} possible keys!".format(len(keys)))
-    #print(keys)
-
-    if len(keys) > 0:
-        solutions = {}
+    solutions = {}
+    best_sol = {}
+    if keys:
         for key in keys:
             #print("Key is possibly: {}".format(key))
             plaintext = decrypt(ciphertext, key)
             pop_var = get_letter_freq_population_variance(plaintext)
-            diff_pop_var = abs(english_pop_var - pop_var)
+            #diff_pop_var = abs(english_pop_var - pop_var)
             num_words = count_words(plaintext, english_dict)
 
             if num_words > WORD_THRESHOLD:
                 solutions[key] = {"key": key, "pop_var":pop_var, "plaintext":plaintext, "num_words":num_words}
 
-        if len(solutions) > 0:
-            #print(solutions)
-            best_sol = {}
-            best_sol_count = 0
-            print("Found {} possible solutions.".format(len(solutions)))
-            for key, sol_dict in six.iteritems(solutions):
-                if sol_dict["num_words"] > best_sol_count:
-                    best_sol = sol_dict
-                    best_sol_count = sol_dict["num_words"]
-            print("Found solution with key {} and plaintext {}".format(best_sol["key"], best_sol["plaintext"]))
-            print("Found {} dictionary words in content, with a population variance of {}".format(best_sol["num_words"], best_sol["pop_var"]))
-        else:
-            print("Could not find any likely solutions.")
+    if solutions:
+        best_sol_count = 0
+        print("Found {} possible solutions.".format(len(solutions)))
+        for key, sol_dict in six.iteritems(solutions):
+            if sol_dict["num_words"] > best_sol_count:
+                best_sol = sol_dict
+                best_sol_count = sol_dict["num_words"]
 
-    else:
-        print("Could not determine any likely keys.")
+    return best_sol
+
+def vigenere_crack(ciphertext, key_len=None):
+    ciphertext = ciphertext.replace(' ', '').upper()
+
+    #print("English Dictionary Population Variance is: {}".format(english_pop_var))
+
+    keys = break_cipher(ciphertext, key_len)
+    print("Found {} possible keys!".format(len(keys)))
+
+    solution = get_solution(ciphertext, keys)
+    return solution
