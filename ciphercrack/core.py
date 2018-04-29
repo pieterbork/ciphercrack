@@ -13,15 +13,14 @@ def crack(ciphertext=None, key_len=None):
         print("No ciphertext provided.")
         return
 
-    # print("Ciphertext: {}".format(content))
-    decoded = encoding.check_encoding(ciphertext)
-    if decoded != ciphertext:
-        print("There you have it!")
-        return
-
     hash_type = hashing.check_hashes(ciphertext)
     if hash_type:
         print("This is a {} hash".format(hash_type))
+        return
+
+    # print("Ciphertext: {}".format(content))
+    decoded = encoding.check_encoding(ciphertext)
+    if decoded != ciphertext:
         return
 
     solution = vigenere_crack(ciphertext)

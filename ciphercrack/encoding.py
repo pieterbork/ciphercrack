@@ -69,13 +69,23 @@ def detect_encoding(string):
         return None
 
 def check_encoding(string):
-    if type(string) == bytes:
-        string = string.decode()
+    print(string, len(string))
+    try:
+        if type(string) == bytes:
+            string = string.decode()
+    except:
+        print("Encoding received bytes, could not decode")
+        return string
 
     encode_type = detect_encoding(string)
     if encode_type:
-        decoded = decode(string, encode_type)
-        print("Decoded {} string to {}".format(encode_type, decoded))
+        try:
+            decoded = decode(string, encode_type)
+            if type(string) == bytes:
+                decoded = decoded.decode()
+                print("Decoded {} string to {}".format(encode_type, decoded))
+        except:
+            print("I thought it was {} but it wasn't...".format(encode_type))
     else:
         return string
 
