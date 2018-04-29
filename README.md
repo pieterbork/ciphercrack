@@ -3,7 +3,7 @@ A project to detect and crack ciphers
 
 Eventually, I want this project to be capable of detecting and cracking all common hashes, encoding, and ciphers.
 
-Inspiration for adding encoding came from (here)[https://github.com/UltimateHackers/Decodify/blob/master/README.md]
+Inspiration for adding encoding came from [Decodify](https://github.com/UltimateHackers/Decodify/blob/master/README.md)
 
 ### Encoding
 
@@ -13,7 +13,7 @@ Currently, ciphercrack can decode binary, hex, base64, and decimal strings. Hex/
 
 ciphercrack can solve Vigenere ciphers using the Kasiski/Babbage method. 
 
-Wikipedia has a decent definition (here)[https://en.wikipedia.org/wiki/Kasiski_examination]
+Wikipedia has a decent definition [here](https://en.wikipedia.org/wiki/Kasiski_examination)
 
 The important thing to note here is that the string must be long enough to have repeats or this method will not be able to find a solution.
 
