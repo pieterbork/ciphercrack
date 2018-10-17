@@ -12,7 +12,7 @@ Encoding
 
 ```python
 $ python
->>> from ciphertext import crack
+>>> from ciphercrack import crack
 >>> import base64
 >>> og_str = "pieterbork"
 >>> hex_str = '0x' + ''.join(hex(ord(c))[2:] for c in og_str)
@@ -31,8 +31,8 @@ Vigenere
 
 ```python
 $ python
->>> from ciphertext.vigenere import encrypt
->>> from ciphertext import crack
+>>> from ciphercrack.vigenere import encrypt
+>>> from ciphercrack import crack
 >>> ciphertext = encrypt("thisisaverysecretstringthatmustbelongenoughtohaveduplicatessothaticancrackthecipherwhichismuchmoredifficultwhenthetextisshort", "secret")
 >>> crack(ciphertext)
 Found 35 possible keys!
