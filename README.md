@@ -14,12 +14,15 @@ git clone https://github.com/pieterbork/ciphercrack.git && cd ciphercrack && pip
 Here are a few things you can paste in the web server to test deciphering different things:
 
 Multi-encoded string
+
 `JTMwJTc4JTM3JTMwJTM2JTM5JTM2JTM1JTM3JTM0JTM2JTM1JTM3JTMyJTM2JTMyJTM2JTY2JTM3JTMyJTM2JTYy`
 
 Vigenere encrypted string
+
 `LLKJMLSZGICLWGTVXLLVKEKMZEVDYLLFGCSGYIPFYZZXQYEOWHWGPBUEVVWLGXJRXBUEPTVTUOVYIVATJVVPZMEYMLEYEYQHJIFZJYAGWCXPZIPKLXLIZKMLKLQIX`
 
 MD5 Hash
+
 `d8e8fca2dc0f896fd7cb4cb0031ba249`
 
 
