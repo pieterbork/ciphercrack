@@ -1,5 +1,5 @@
 # ciphercrack
-A project to detect and crack ciphers
+A python3 project to detect and crack ciphers
 
 Inspiration for adding encoding came from [Decodify](https://github.com/UltimateHackers/Decodify/blob/master/README.md)
 
