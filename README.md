@@ -1,8 +1,6 @@
 # ciphercrack
 A project to detect and crack ciphers
 
-Eventually, I want this project to be capable of detecting and cracking all common hashes, encoding, and ciphers.
-
 Inspiration for adding encoding came from [Decodify](https://github.com/UltimateHackers/Decodify/blob/master/README.md)
 
 
@@ -80,7 +78,7 @@ For vigenere, all spaces will be removed and encryption/decryption will be all u
 
 ### Caesar
 
-Vigenere is just a Caesar cipher for each letter, so it ciphercrack can by default do Caesar ciphers as well.
+Vigenere is just a Caesar cipher for each letter, so ciphercrack can do Caesar ciphers as well.
 
 ```python
 >>> from ciphercrack.vigenere import encrypt
