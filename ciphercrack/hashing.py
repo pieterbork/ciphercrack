@@ -3,7 +3,8 @@ import re
 #Get type of hash
 def check_hashes(ciphertext):
     cipher_len = len(ciphertext)
-
+    
+    #A collection of hash regexes
     md5_regex = "^\w{32}$"
     sha1_regex = "^\w{40}$"
     sha256_regex = "^\w{64}$"
@@ -14,6 +15,7 @@ def check_hashes(ciphertext):
     sha512crypt_regex = "^\$6\$.{0,16}\$.{86}$"
     crypt_prefixes = ["$5", "$6"]
 
+    #In and substring operations are much faster than regex matching
     if cipher_len in lens:
         if re.match(md5_regex, ciphertext):
             return "MD5"
