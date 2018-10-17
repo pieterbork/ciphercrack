@@ -6,6 +6,22 @@ Inspiration for adding encoding came from [Decodify](https://github.com/Ultimate
 
 ## How it works
 
+Run this to try it out with a simple flask server
+```
+git clone https://github.com/pieterbork/ciphercrack.git && cd ciphercrack && pip install -e . && python run.py
+```
+
+Here are a few things you can paste to try it out:
+
+```
+JTMwJTc4JTM3JTMwJTM2JTM5JTM2JTM1JTM3JTM0JTM2JTM1JTM3JTMyJTM2JTMyJTM2JTY2JTM3JTMyJTM2JTYy #See the example below for encoding
+
+LLKJMLSZGICLWGTVXLLVKEKMZEVDYLLFGCSGYIPFYZZXQYEOWHWGPBUEVVWLGXJRXBUEPTVTUOVYIVATJVVPZMEYMLEYEYQHJIFZJYAGWCXPZIPKLXLIZKMLKLQIX #See the example below for Vigenere
+
+d8e8fca2dc0f896fd7cb4cb0031ba249 #See the example below for hashing
+```
+
+
 Encoding
 
 ```python

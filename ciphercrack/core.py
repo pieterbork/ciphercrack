@@ -1,10 +1,10 @@
 import re
 import six
 
-from ciphercrack.languages import english_freq_dict, english_alph, english_dict
-from ciphercrack.vigenere import vigenere_crack
-from ciphercrack import encoding
-from ciphercrack import hashing
+from .languages import english_freq_dict, english_alph, english_dict
+from .vigenere import vigenere_crack
+from . import encoding
+from . import hashing
 
 #This script is compatible with Python 2 and 3 using the six library
 #Known issues: If ciphertext is not long enough or has no repeats, this will error out

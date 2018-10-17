@@ -1,5 +1,5 @@
-from ciphercrack.languages import english_dict, english_freq_dict, english_alph
-from ciphercrack.utils import count_words, find_all_indexes, get_divisors
+from .languages import english_dict, english_freq_dict, english_alph
+from .utils import count_words, find_all_indexes, get_divisors
 from collections import Counter
 import six, re
 

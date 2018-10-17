@@ -1,0 +1,19 @@
+{% if greeting %}
+<h1>{{greeting}}</h1>
+<form>
+    <textarea name="ciphertext" rows="15" cols="100"></textarea>
+    <button type="submit">Submit</button
+</form>
+{% endif %}
+
+{% if plaintext %}
+<h1>Success, deciphered:</h1>
+<h4>{{plaintext}}</h4>
+<a href="/"><button>Try Again</button></a>
+{% endif %}
+
+{% if error %}
+<h1>{{error}}</h1>
+<a href="/"><button>Try Again</button></a>
+{% endif %}
+
